@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     LineGraphSeries<DataPoint> series;
     GraphView graphView;
 
-    private Runnable mTimer2;
     private double graph2LastXValue = 5d;
 
     @Override
@@ -32,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startService(new Intent(MainActivity.this, MessageService.class));
+        startService(new Intent(MainActivity.this, RemoteMonitorService.class));
 
         series = new LineGraphSeries<>();
 
@@ -48,22 +47,22 @@ public class MainActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("custom-event-name"));
         super.onResume();
-        mTimer2 = new Runnable() {
-            @Override
-            public void run() {
-                graph2LastXValue += 1d;
-                series.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
-                mHandler.postDelayed(this, 200);
-            }
-        };
-        mHandler.postDelayed(mTimer2, 1000);
+//        mTimer2 = new Runnable() {
+//            @Override
+//            public void run() {
+//                graph2LastXValue += 1d;
+//                series.appendData(new DataPoint(graph2LastXValue, getRandom()), true, 40);
+//                mHandler.postDelayed(this, 200);
+//            }
+//        };
+//        mHandler.postDelayed(mTimer2, 1000);
     }
 
     @Override
     public void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(
                 mMessageReceiver);
-        mHandler.removeCallbacks(mTimer2);
+//        mHandler.removeCallbacks(mTimer2);
         super.onPause();
     }
 
@@ -72,47 +71,8 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             // TODO Auto-generated method stub
             // Get extra data included in the Intent
-            String message = intent.getStringExtra("message");
+            double message = intent.getDoubleExtra("message", 0);
             Log.d("receiver", "Got message: " + message);
         }
     };
-
-
-    double mLastRandom = 2;
-    Random mRand = new Random();
-    private double getRandom() {
-        return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
-    }
-
-    public static class MessageService extends Service {
-
-        public MessageService() {
-
-        }
-
-        @Override
-        public IBinder onBind(Intent intent) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            // TODO Auto-generated method stub
-            sendMessage();
-            return super.onStartCommand(intent, flags, startId);
-        }
-
-        // Send an Intent with an action named "custom-event-name". The Intent
-        // sent should
-        // be received by the ReceiverActivity.
-        private void sendMessage() {
-            Log.d("sender", "Broadcasting message");
-            Intent intent = new Intent("custom-event-name");
-            // You can also include some extra data.
-            intent.putExtra("message", "This is my message!");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-
-    }
 }

@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MainActivity$MessageService"></service>
+<service android:name=".RemoteMonitorService"></service>
     </application>
 
 </manifest>
