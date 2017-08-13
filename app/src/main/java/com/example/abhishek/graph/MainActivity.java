@@ -1,8 +1,16 @@
 package com.example.abhishek.graph;
 
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -24,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        startService(new Intent(MainActivity.this, MessageService.class));
+
         series = new LineGraphSeries<>();
 
         graphView = (GraphView) findViewById(R.id.graph);
@@ -35,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("custom-event-name"));
         super.onResume();
         mTimer2 = new Runnable() {
             @Override
@@ -49,26 +61,58 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(
+                mMessageReceiver);
         mHandler.removeCallbacks(mTimer2);
         super.onPause();
     }
 
-    private DataPoint[] generateData() {
-        int count = 30;
-        DataPoint[] values = new DataPoint[count];
-        for (int i=0; i<count; i++) {
-            double x = i;
-            double f = mRand.nextDouble()*0.15+0.3;
-            double y = Math.sin(i*f+2) + mRand.nextDouble()*0.3;
-            DataPoint v = new DataPoint(x, y);
-            values[i] = v;
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // TODO Auto-generated method stub
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("message");
+            Log.d("receiver", "Got message: " + message);
         }
-        return values;
-    }
+    };
+
 
     double mLastRandom = 2;
     Random mRand = new Random();
     private double getRandom() {
         return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
+    }
+
+    public static class MessageService extends Service {
+
+        public MessageService() {
+
+        }
+
+        @Override
+        public IBinder onBind(Intent intent) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            // TODO Auto-generated method stub
+            sendMessage();
+            return super.onStartCommand(intent, flags, startId);
+        }
+
+        // Send an Intent with an action named "custom-event-name". The Intent
+        // sent should
+        // be received by the ReceiverActivity.
+        private void sendMessage() {
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("custom-event-name");
+            // You can also include some extra data.
+            intent.putExtra("message", "This is my message!");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+
     }
 }
