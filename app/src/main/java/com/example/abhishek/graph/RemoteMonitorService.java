@@ -24,7 +24,7 @@ public class RemoteMonitorService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sendMessage();
+        testLoop();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -35,11 +35,13 @@ public class RemoteMonitorService extends Service {
     }
 
     private final Handler mHandler = new Handler();
+
     private void testLoop() {
         Runnable mTimer2 = new Runnable() {
             @Override
             public void run() {
                 sendMessage();
+                mHandler.postDelayed(this, 200);
             }
         };
         mHandler.postDelayed(mTimer2, 1000);
@@ -49,7 +51,6 @@ public class RemoteMonitorService extends Service {
         Log.d("sender", "Broadcasting message");
 
         Intent intent = new Intent("custom-event-name");
-        // You can also include some extra data.
         intent.putExtra("message", getRandom());
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
