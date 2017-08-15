@@ -4,15 +4,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-
-import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.Random;
 
 public class RemoteMonitorService extends Service {
+    private static final String TAG = RemoteMonitorService.class.getSimpleName();
+    private final Handler mHandler = new Handler();
+    double mLastRandom = 2;
+    Random mRand = new Random();
+
     public RemoteMonitorService() {
     }
 
@@ -28,13 +29,10 @@ public class RemoteMonitorService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    double mLastRandom = 2;
-    Random mRand = new Random();
     private double getRandom() {
-        return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
+        return mLastRandom += mRand.nextDouble() * 0.5 - 0.25;
     }
 
-    private final Handler mHandler = new Handler();
 
     private void testLoop() {
         Runnable mTimer2 = new Runnable() {
@@ -48,7 +46,7 @@ public class RemoteMonitorService extends Service {
     }
 
     private void sendMessage() {
-        Log.d("sender", "Broadcasting message");
+//        Log.d("sender", "Broadcasting message");
 
         Intent intent = new Intent("custom-event-name");
         intent.putExtra("message", getRandom());
